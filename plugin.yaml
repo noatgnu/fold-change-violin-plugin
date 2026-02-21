@@ -1,0 +1,137 @@
+---
+plugin:
+  id: "fold-change-violin"
+  name: "Fold Change Violin Plot"
+  description: "Generate violin plots for fold enrichment analysis across organelles"
+  version: "1.0.0"
+  author: "CauldronGO Team"
+  category: "visualization"
+  icon: "bar_chart"
+  repository: "https://github.com/noatgnu/fold-change-violin-plugin"
+
+runtime:
+  environments: ["python"]
+  entrypoint: "fold_change_violin_plot.py"
+
+inputs:
+  - name: "input_file"
+    label: "Input Data File"
+    type: "file"
+    required: true
+    accept: ".csv,.tsv,.txt"
+    description: "Data file containing fold enrichment values"
+
+  - name: "columns_prefix"
+    label: "Columns Prefix"
+    type: "text"
+    default: "Difference"
+    description: "Prefix of columns to include in analysis"
+
+  - name: "categories"
+    label: "Organelle Columns"
+    type: "column-selector"
+    required: true
+    multiple: true
+    sourceFile: "input_file"
+    description: "Select columns representing different organelles/categories"
+
+  - name: "match_value"
+    label: "Match Value"
+    type: "text"
+    default: "+"
+    description: "Symbol or string to match in the data for filtering"
+
+  - name: "fold_enrichment_col"
+    label: "Fold Enrichment Column"
+    type: "text"
+    default: "Fold enrichment"
+    description: "Name of the column containing fold enrichment values"
+
+  - name: "organelle_col"
+    label: "Organelle Column"
+    type: "text"
+    default: "Organelle"
+    description: "Name of the column containing organelle labels"
+
+  - name: "comparison_col"
+    label: "Comparison Column"
+    type: "text"
+    required: false
+    default: "Comparison"
+    description: "Name of the column for comparison groups (optional)"
+
+  - name: "colors"
+    label: "Category Colors"
+    type: "text"
+    default: "C..Lysosome:#ffb3ba,C..Mitochondria:#ffdfba,Endosome:#ffffba,Golgi:#baffc9,ER:#bae1ff,Ribosome:#d7baff,Nuclear:#ffbaff"
+    description: "Comma-separated category:color pairs (e.g., Lysosome:#ffb3ba)"
+
+  - name: "figsize"
+    label: "Figure Size"
+    type: "text"
+    default: "6,10"
+    description: "Figure size in inches (width,height)"
+
+outputs:
+  - name: "violin_plots_pdf"
+    path: "*.pdf"
+    type: "image"
+    description: "Violin plots for each comparison group (PDF format)"
+    format: "pdf"
+
+  - name: "violin_plots_svg"
+    path: "*.svg"
+    type: "image"
+    description: "Violin plots for each comparison group (SVG format)"
+    format: "svg"
+
+plots:
+  - id: "violin_plots"
+    name: "Violin Plots"
+    type: "image-grid"
+    dataSource: "violin_plots_svg"
+    config:
+      imagePattern: "*.svg"
+      columns: 1
+
+execution:
+  argsMapping:
+    input_file: "--file_path"
+    columns_prefix: "--columns_prefix"
+    categories:
+      flag: "--categories"
+      transform: "comma-join"
+    match_value: "--match_value"
+    fold_enrichment_col: "--fold_enrichment_col"
+    organelle_col: "--organelle_col"
+    comparison_col: "--comparison_col"
+    colors: "--colors"
+    figsize: "--figsize"
+
+  outputDir: "--output_folder"
+
+  requirements:
+    python: ">=3.11"
+    packages:
+      - "pandas>=2.0.0"
+      - "seaborn>=0.12.0"
+      - "matplotlib>=3.7.0"
+
+example:
+  enabled: true
+  values:
+    input_file: "examples/fold_change/enrichment.txt"
+    categories_source: "examples/fold_change/enrichment.txt"
+    categories:
+      - "C..Lysosome"
+      - "C..Mitochondria"
+      - "Endosome"
+      - "Golgi"
+      - "ER"
+      - "Ribosome"
+      - "Nuclear"
+    columns_prefix: "Difference"
+    match_value: "+"
+    fold_enrichment_col: "Fold enrichment"
+    organelle_col: "Organelle"
+    comparison_col: "Comparison"
